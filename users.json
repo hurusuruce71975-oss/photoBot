@@ -1,0 +1,35 @@
+{
+    "7348710380": {
+        "expiry": null,
+        "joined_at": "2026-01-27T23:43:13.287205",
+        "is_blocked": false,
+        "builds_balance": 0,
+        "username": "soo9aget1ow",
+        "first_name": "Mark",
+        "last_name": "Hanna"
+    },
+    "7306745130": {
+        "expiry": null,
+        "joined_at": "2026-01-27T23:55:42.168263",
+        "is_blocked": false,
+        "builds_balance": 0,
+        "username": "sofiakisameow",
+        "first_name": "Sonya",
+        "last_name": "\ud83d\udc31",
+        "used_promocodes": [
+            "\u043f\u043f\u043f"
+        ]
+    },
+    "808138073": {
+        "expiry": "2027-01-28T00:47:52.957937",
+        "joined_at": "2026-01-28T00:44:03.472764",
+        "is_blocked": false,
+        "builds_balance": 0,
+        "username": "beeeeech_121",
+        "first_name": "\u0410\u043d\u043d\u0430",
+        "last_name": null,
+        "used_promocodes": [
+            "anna"
+        ]
+    }
+}

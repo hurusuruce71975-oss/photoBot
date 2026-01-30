@@ -1,0 +1,39 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesize
+
+# Database (optional, depending on if you want to commit data)
+# Usually you don't commit production user data
+# users.json
+# links.json
+# transactions.json
+# promocodes.json
+# domains.json
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo

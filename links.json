@@ -1,0 +1,38 @@
+{
+    "eadb6081-5e5d-46d4-899d-372a5db225c7": {
+        "owner_id": 7348710380,
+        "redirect_url": "https://vk.com",
+        "created_at": "2026-01-27T23:43:49.028058"
+    },
+    "0c3395ce-d931-4a2d-bd4a-1e5df481c603": {
+        "owner_id": 7348710380,
+        "redirect_url": "https://vk.com",
+        "created_at": "2026-01-28T00:11:23.252604"
+    },
+    "1aabb7b6-fcc5-440a-a963-38c6eaed5649": {
+        "owner_id": 7306745130,
+        "redirect_url": "https://youtube.com/watch?v=",
+        "created_at": "2026-01-28T00:33:57.145127"
+    },
+    "9d689fce-4472-402d-aa99-921f682fefab": {
+        "owner_id": 808138073,
+        "redirect_url": "https://google.com",
+        "created_at": "2026-01-28T00:48:59.830403"
+    },
+    "b1abed43-416e-4307-a767-f1acd8301d1e": {
+        "owner_id": 7348710380,
+        "redirect_url": "https://www.youtube.com/watch?v=QJI0an6irrA",
+        "created_at": "2026-01-30T14:41:21.324907",
+        "meta": {
+            "title": " - YouTube",
+            "description": "Auf YouTube findest du die angesagtesten Videos und Tracks. Au\u00dferdem kannst du eigene Inhalte hochladen und mit Freunden oder gleich der ganzen Welt teilen.",
+            "image": ""
+        }
+    },
+    "8c9f6962-f59e-4f6e-9fe6-8b90732dcab3": {
+        "owner_id": 7348710380,
+        "redirect_url": "http://localhost:3000",
+        "created_at": "2026-01-30T14:49:00.389174",
+        "meta": {}
+    }
+}
