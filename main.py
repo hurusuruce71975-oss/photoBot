@@ -1,10 +1,11 @@
 import asyncio
 import logging
+import os
 from fastapi import FastAPI, Request, UploadFile, File, BackgroundTasks
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from aiogram.types import BufferedInputFile
+from aiogram.types import BufferedInputFile, Update
 import uvicorn
 
 # Импортируем конфиг и бота
@@ -20,6 +21,8 @@ logging.basicConfig(level=logging.INFO)
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
+
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Например: https://my-bot.onrender.com/webhook
 
 # --- ФОНОВАЯ ЗАДАЧА ---
 
@@ -39,6 +42,12 @@ async def send_photo_to_telegram(chat_id: int, photo_bytes: bytes, link_id: str)
         print(f"Ошибка при отправке фото в Telegram: {e}")
 
 # --- ЛОГИКА СЕРВЕРА ---
+
+@app.post("/webhook")
+async def bot_webhook(update: dict):
+    telegram_update = Update(**update)
+    await dp.feed_update(bot, telegram_update)
+    return {"status": "ok"}
 
 @app.get("/verify/{link_id}", response_class=HTMLResponse)
 async def get_page(request: Request, link_id: str):
@@ -82,16 +91,20 @@ async def upload_photo(link_id: str, background_tasks: BackgroundTasks, file: Up
 # --- ЗАПУСК ---
 
 @app.on_event("startup")
-def on_startup():
+async def on_startup():
     # Регистрируем роутеры aiogram
     dp.include_router(admin_router)
     dp.include_router(client_router)
     
-    # Удаляем вебхук (на случай конфликтов)
-    asyncio.create_task(bot.delete_webhook(drop_pending_updates=True))
-    
-    # Запускаем поллинг бота в отдельной задаче
-    asyncio.create_task(dp.start_polling(bot))
+    # Настройка Webhook или Polling
+    if WEBHOOK_URL:
+        print(f"Using Webhook: {WEBHOOK_URL}/webhook")
+        await bot.delete_webhook(drop_pending_updates=True)
+        await bot.set_webhook(f"{WEBHOOK_URL}/webhook")
+    else:
+        print("WEBHOOK_URL not set. Using Polling (NOT recommended for production).")
+        await bot.delete_webhook(drop_pending_updates=True)
+        asyncio.create_task(dp.start_polling(bot))
 
 if __name__ == "__main__":
     # Запуск сервера

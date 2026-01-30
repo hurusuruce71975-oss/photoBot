@@ -1,6 +1,14 @@
 # Environment variables
 .env
 
+# Database (dynamic data - do not commit)
+users.json
+links.json
+transactions.json
+database.json
+promocodes.json
+domains.json
+
 # Python
 __pycache__/
 *.pyc
