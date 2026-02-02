@@ -24,9 +24,7 @@ python-multipart==0.0.21
 starlette==0.50.0
 typing-inspection==0.4.2
 typing_extensions==4.15.0
-uvicorn==0.40.0
 yarl==1.22.0
 python-dotenv
 supabase
-mangum
 beautifulsoup4
