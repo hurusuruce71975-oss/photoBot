@@ -7,8 +7,6 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from aiogram.types import BufferedInputFile, Update
 import uvicorn
-# Адаптер для Netlify/Lambda (Vercel uses native ASGI)
-# handler = Mangum(app)
 
 # Импортируем конфиг и бота
 from config import bot, dp
@@ -99,20 +97,11 @@ async def on_startup():
     dp.include_router(admin_router)
     dp.include_router(client_router)
     
-    # В серверлес окружении (webhook) нам не нужно запускать polling
-    # Установка вебхука происходит вручную или один раз, 
-    # но можно оставить проверку здесь, если это долгоживущий сервер
     if WEBHOOK_URL:
-        # В Netlify функциях startup event может срабатывать при каждом запуске "холодного" контейнера.
-        # Лучше не дергать API телеграма (set_webhook) слишком часто во избежание лимитов.
-        # Оставим это на совести администратора или отдельного скрипта setup.
         pass
-
-# handler = Mangum(app)
 
 if __name__ == "__main__":
     # Локальный запуск
-    # При локальном запуске можно настроить Polling, если WEBHOOK_URL не задан
     dp.include_router(admin_router)
     dp.include_router(client_router)
     
