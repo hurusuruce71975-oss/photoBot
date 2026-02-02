@@ -1,9 +1,10 @@
 [build]
   command = "pip install -r requirements.txt"
+  functions = "functions"
   publish = "public"
 
-[functions]
-  directory = "netlify/functions"
+[build.environment]
+  PYTHON_VERSION = "3.11"
 
 [[redirects]]
   from = "/*"
