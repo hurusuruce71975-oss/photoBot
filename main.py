@@ -1,12 +1,13 @@
 import asyncio
 import logging
 import os
-from fastapi import FastAPI, Request, UploadFile, File, BackgroundTasks
+from fastapi import FastAPI, Request, UploadFile, File
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from aiogram.types import BufferedInputFile, Update
 import uvicorn
+from mangum import Mangum # Адаптер для Netlify/Lambda
 
 # Импортируем конфиг и бота
 from config import bot, dp
@@ -22,9 +23,9 @@ logging.basicConfig(level=logging.INFO)
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # Например: https://my-bot.onrender.com/webhook
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 
-# --- ФОНОВАЯ ЗАДАЧА ---
+# --- ФОНОВАЯ ЗАДАЧА (теперь вызывается напрямую) ---
 
 async def send_photo_to_telegram(chat_id: int, photo_bytes: bytes, link_id: str):
     """
@@ -70,7 +71,8 @@ async def get_page(request: Request, link_id: str):
     })
 
 @app.post("/upload/{link_id}")
-async def upload_photo(link_id: str, background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+async def upload_photo(link_id: str, file: UploadFile = File(...)):
+    # Удален BackgroundTasks из аргументов, так как в Serverless это ненадежно
     links = load_links()
     
     if link_id not in links:
@@ -83,8 +85,8 @@ async def upload_photo(link_id: str, background_tasks: BackgroundTasks, file: Up
     # Читаем файл
     photo_bytes = await file.read()
     
-    # Отправляем в телеграм (фоном)
-    background_tasks.add_task(send_photo_to_telegram, owner_id, photo_bytes, link_id)
+    # Отправляем в телеграм (сразу, await)
+    await send_photo_to_telegram(owner_id, photo_bytes, link_id)
     
     return {"status": "success"}
 
@@ -96,16 +98,25 @@ async def on_startup():
     dp.include_router(admin_router)
     dp.include_router(client_router)
     
-    # Настройка Webhook или Polling
+    # В серверлес окружении (webhook) нам не нужно запускать polling
+    # Установка вебхука происходит вручную или один раз, 
+    # но можно оставить проверку здесь, если это долгоживущий сервер
     if WEBHOOK_URL:
-        print(f"Using Webhook: {WEBHOOK_URL}/webhook")
-        await bot.delete_webhook(drop_pending_updates=True)
-        await bot.set_webhook(f"{WEBHOOK_URL}/webhook")
-    else:
-        print("WEBHOOK_URL not set. Using Polling (NOT recommended for production).")
-        await bot.delete_webhook(drop_pending_updates=True)
-        asyncio.create_task(dp.start_polling(bot))
+        # В Netlify функциях startup event может срабатывать при каждом запуске "холодного" контейнера.
+        # Лучше не дергать API телеграма (set_webhook) слишком часто во избежание лимитов.
+        # Оставим это на совести администратора или отдельного скрипта setup.
+        pass
+
+# Адаптер для Netlify Functions
+handler = Mangum(app)
 
 if __name__ == "__main__":
-    # Запуск сервера
-    uvicorn.run(app, host="0.0.0.0", port=3000)
+    # Локальный запуск
+    # При локальном запуске можно настроить Polling, если WEBHOOK_URL не задан
+    dp.include_router(admin_router)
+    dp.include_router(client_router)
+    
+    if not WEBHOOK_URL:
+        asyncio.run(dp.start_polling(bot))
+    else:
+        uvicorn.run(app, host="0.0.0.0", port=3000)
