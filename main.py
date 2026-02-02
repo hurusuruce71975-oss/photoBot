@@ -7,7 +7,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from aiogram.types import BufferedInputFile, Update
 import uvicorn
-from mangum import Mangum # Адаптер для Netlify/Lambda
+# Адаптер для Netlify/Lambda (Vercel uses native ASGI)
+# handler = Mangum(app)
 
 # Импортируем конфиг и бота
 from config import bot, dp
@@ -107,8 +108,7 @@ async def on_startup():
         # Оставим это на совести администратора или отдельного скрипта setup.
         pass
 
-# Адаптер для Netlify Functions
-handler = Mangum(app)
+# handler = Mangum(app)
 
 if __name__ == "__main__":
     # Локальный запуск
